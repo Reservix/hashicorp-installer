@@ -17,7 +17,7 @@ $ apt install jq
 
 ### MacOS
 ```sh
-brew install jq
+$ brew install jq
 ```
 
 ## Use Installer
