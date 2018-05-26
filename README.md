@@ -23,7 +23,7 @@ brew install jq
 ## Use Installer
 
 ```sh
-$ ./hashicrop-installer.sh terraform
+$ ./hashicorp-installer.sh terraform
 
-$ ./hashicrop-installer.sh packer
+$ ./hashicorp-installer.sh packer
 ```
