@@ -33,14 +33,14 @@ test "${#}" -eq 0  \
 	}
 
 # get parameter
-PACKAGE="${1}"
+package="${1}"
 
 # get version list
 package_version_list=$(curl -s https://releases.hashicorp.com/index.json \
-	| jq "{${PACKAGE}}" \
+	| jq "{${package}}" \
 	| egrep "linux.*${arch}") \
 	|| {
-		echo "There is no package \"${PACKAGE}\""
+		echo "There is no package \"${package}\""
 		exit 1
 	}
 
@@ -58,23 +58,23 @@ package_url=$(echo "${package_version_list}" \
 	| awk -F'"' '{print $4}')
 
 # check version difference
-which "${PACKAGE}" 2>&1 > /dev/null \
+which "${package}" 2>&1 > /dev/null \
 	&& {
-		installed_package_version=$("${PACKAGE}" --version \
+		package_version_installed=$("${package}" --version \
 			| head -n 1 \
 			| cut -d' ' -f2 \
 			| sed "s/v//")
 
-		ver_eq "${installed_package_version}" "${package_version}" \
+		ver_eq "${package_version_installed}" "${package_version}" \
 			|| {
-				echo "No update available. Latest version is ${PACKAGE}-${package_version}"
+				echo "No update available. Latest version is ${package}-${package_version}"
 				exit 0
 			}
 	}
 
 
 # set install path
-package_install_path="${install_prefix}/${PACKAGE}-${package_version}/"
+package_install_path="${install_prefix}/${package}-${package_version}"
 
 # Create and change into directory
 mkdir -p "${package_install_path}" \
@@ -84,12 +84,12 @@ mkdir -p "${package_install_path}" \
 	}
 
 # download and unzip package
-curl -s -o "${PACKAGE}.zip" "${package_url}"
-unzip -q "${PACKAGE}.zip" -d "${package_install_path}"
+curl -s -o "${package}.zip" "${package_url}"
+unzip -q "${package}.zip" -d "${package_install_path}"
 
 # set symlink
-ln -snf "${package_install_path}/${PACKAGE}" "${HOME}/bin/${PACKAGE}"
+ln -snf "${package_install_path}/${package}" "${HOME}/bin/${package}"
 
 # exit gracefully
-echo "Successfully installed ${PACKAGE}-${package_version}"
+echo "Successfully installed ${package}-${package_version}"
 exit 0
