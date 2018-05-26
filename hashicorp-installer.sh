@@ -65,7 +65,7 @@ package_version=$(echo "${package_version_list}" \
 	| grep -E filename \
 	| awk -F'"' '{print $4}' \
 	| cut -d'_' -f2 \
-	| sort --version-sort -r \
+	| sort -V -r \
 	| head -1)
 
 # get package url of latest version
