@@ -106,6 +106,9 @@ unzip -q "${package}.zip" -d "${package_install_path}"
 # set symlink
 ln -s -n -f "${package_install_path}/${package}" "${HOME}/bin/${package}"
 
+# cleanup downloaded package
+rm -f "${package}.zip"
+
 # exit gracefully
 echo "Successfully installed ${package}-${package_version}"
 exit 0
