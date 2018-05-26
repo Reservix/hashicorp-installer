@@ -1,42 +1,68 @@
 #!/bin/bash
 
+# variables
+arch="amd64"
+install_prefix="${HOME}/bin"
+
 # version lower
 ver_lt() {
-    [ "$1" = "$(echo -e "$1\n$2" | sort -V | head -n1)" ]
+	[ "${1}" = "$(echo -e "${1}\n${2}" | sort -V | head -n1)" ]
 }
 
 # version equal
 ver_eq() {
-    [ "$1" = "$2" ] && return 1 || ver_lt $1 $2
+	[ "${1}" = "${2}" ] && return 1 || ver_lt $1 $2
 }
 
 # check for jq
 which jq &> /dev/null || { echo "Please install jq!"; exit 1; }
 
 # check parameter
-PACKAGE="$1"
-[ -z "$PACKAGE" ] && { echo "You need to specify a package!"; exit 1; }
+PACKAGE="${1}"
+[ -z "${PACKAGE}" ] && { echo "You need to specify a hashicorp package!"; exit 1; }
 
-# get url, installed version and latest version of $PACKAGE
-package_url=$(curl https://releases.hashicorp.com/index.json | jq "{$PACKAGE}" | egrep "linux.*amd64" | sort --version-sort -r | head -1 | awk -F[\"] '{print $4}')
-package_version=$(curl https://releases.hashicorp.com/index.json | jq "{$PACKAGE}" | egrep "linux.*amd64" | sort --version-sort -r | grep filename | head -1 | awk -F[\"] '{print $4}' | cut -d"_" -f2)
-installed_package_version=$("$PACKAGE" --version | head -n 1 | cut -d' ' -f2 | sed "s/v//")
+# get version list
+package_version_list=$(curl -s https://releases.hashicorp.com/index.json \
+	| jq "{${PACKAGE}}" \
+	| egrep "linux.*${arch}")
 
-# check the version difference if we have it already
-if which "$PACKAGE" &> /dev/null; then
-  ver_eq "$installed_package_version" "$package_version" \
-    || { echo "No update available."; exit; }
+# check if package exists
+echo "${package_version_list}" | grep -q ${PACKAGE} || { echo "There is no package \"${PACKAGE}\""; exit 1; }
+
+# get latest version
+package_version=$(echo "${package_version_list}" \
+	| egrep filename \
+	| awk -F[\"] '{print $4}' \
+	| cut -d[_] -f2 \
+	| sort --version-sort -r \
+	| head -1)
+
+# get package url of latest version
+package_url=$(echo "${package_version_list}" \
+	| egrep "url.*${package_version}" \
+	| awk -F[\"] '{print $4}')
+
+# check version difference
+if which "${PACKAGE}" &> /dev/null; then
+	installed_package_version=$("${PACKAGE}" --version | head -n 1 | cut -d" " -f2 | sed "s/v//")
+
+	ver_eq "${installed_package_version}" "${package_version}" \
+		|| { echo "No update available. Latest version is ${PACKAGE}-${package_version}"; exit; }
 fi
 
-# Create a move into directory.
-mkdir -p ~/bin/"$PACKAGE-$package_version" && cd "$_" || { echo "Failed to create and enter ~/bin/$PACKAGE-$package_version"; exit 1; }
+# set install path
+package_install_path="${install_prefix}/${PACKAGE}-${package_version}/"
 
-# download package
-echo "Downloading $package_url."
-curl -o "$PACKAGE.zip" "$package_url"
+# Create and change into directory
+mkdir -p "${package_install_path}" || { echo "Failed to create ${package_install_path}"; exit 1; }
 
-# unzip and install
-unzip "$PACKAGE.zip"
+# download and unzip package
+curl -s -o "${PACKAGE}.zip" "${package_url}"
+unzip -q "${PACKAGE}.zip" -d "${package_install_path}"
 
 # set symlink
-ln -snf ~/bin/"$PACKAGE-$package_version/$PACKAGE" ~/bin/"$PACKAGE"
+ln -snf "${package_install_path}/${PACKAGE}" "${HOME}/bin/${PACKAGE}"
+
+# exit gracefully
+echo "Successfully installed ${PACKAGE}-${package_version}"
+exit 0
