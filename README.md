@@ -14,7 +14,7 @@ Curl and unzip should be already installed on MacOS and Debian/Ubuntu.
 $ apt install jq
 ```
 
-### MacOs
+### MacOS
 ```sh
 brew install jq
 ```
