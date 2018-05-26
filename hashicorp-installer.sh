@@ -4,14 +4,14 @@
 arch="amd64"
 install_prefix="${HOME}/bin"
 
-# version lower
+# version is lower
 ver_lt() {
 	test "${1}" = "$(printf "%s\\n%s" "${1}" "${2}" \
 		| sort -V \
 		| head -n1)"
 }
 
-# version equal
+# versions are equal
 ver_eq() {
 	test "${1}" = "${2}" \
 		&& return 1
@@ -19,10 +19,25 @@ ver_eq() {
 	ver_lt "${1}" "${2}"
 }
 
-# check for jq
+# check for required toolset
+command -v awk > /dev/null 2>&1 \
+	|| {
+		echo "Please install awk!"
+		exit 1
+	}
 command -v jq > /dev/null 2>&1 \
 	|| {
 		echo "Please install jq!"
+		exit 1
+	}
+command -v curl > /dev/null 2>&1 \
+	|| {
+		echo "Please install curl!"
+		exit 1
+	}
+command -v unzip > /dev/null 2>&1 \
+	|| {
+		echo "Please install unzip!"
 		exit 1
 	}
 
@@ -77,7 +92,7 @@ command -v "${package}" > /dev/null 2>&1 \
 # set install path
 package_install_path="${install_prefix}/${package}-${package_version}"
 
-# Create and change into directory
+# create installation directory
 mkdir -p "${package_install_path}" \
 	|| {
 		echo "Failed to create ${package_install_path}"
