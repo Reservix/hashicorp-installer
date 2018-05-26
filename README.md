@@ -1,5 +1,5 @@
 # hashicorp-installer
-A short script to simply install hashicorp packages
+A short POSIX compliant shell script to install hashicorp packages
 
 ## Install Requirements
 

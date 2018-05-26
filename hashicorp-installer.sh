@@ -6,7 +6,7 @@ install_prefix="${HOME}/bin"
 
 # version lower
 ver_lt() {
-	test "${1}" = "$(echo -e "${1}\n${2}" \
+	test "${1}" = "$(printf "%s\\n%s" "${1}" "${2}" \
 		| sort -V \
 		| head -n1)"
 }
@@ -14,12 +14,13 @@ ver_lt() {
 # version equal
 ver_eq() {
 	test "${1}" = "${2}" \
-		&& return 1 \
-		|| ver_lt "${1}" "${2}"
+		&& return 1
+
+	ver_lt "${1}" "${2}"
 }
 
 # check for jq
-which jq 2>&1 > /dev/null \
+command -v jq > /dev/null 2>&1 \
 	|| {
 		echo "Please install jq!"
 		exit 1
@@ -38,7 +39,7 @@ package="${1}"
 # get version list
 package_version_list=$(curl -s https://releases.hashicorp.com/index.json \
 	| jq "{${package}}" \
-	| egrep "linux.*${arch}") \
+	| grep -E "linux.*${arch}") \
 	|| {
 		echo "There is no package \"${package}\""
 		exit 1
@@ -46,7 +47,7 @@ package_version_list=$(curl -s https://releases.hashicorp.com/index.json \
 
 # get latest version
 package_version=$(echo "${package_version_list}" \
-	| egrep filename \
+	| grep -E filename \
 	| awk -F'"' '{print $4}' \
 	| cut -d'_' -f2 \
 	| sort --version-sort -r \
@@ -54,11 +55,11 @@ package_version=$(echo "${package_version_list}" \
 
 # get package url of latest version
 package_url=$(echo "${package_version_list}" \
-	| egrep "url.*${package_version}" \
+	| grep -E "url.*${package_version}" \
 	| awk -F'"' '{print $4}')
 
 # check version difference
-which "${package}" 2>&1 > /dev/null \
+command -v "${package}" > /dev/null 2>&1 \
 	&& {
 		package_version_installed=$("${package}" --version \
 			| head -n 1 \
