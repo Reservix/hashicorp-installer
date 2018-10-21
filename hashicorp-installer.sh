@@ -54,6 +54,7 @@ package="${1}"
 # get version list
 package_version_list=$(curl -s https://releases.hashicorp.com/index.json \
 	| jq "{${package}}" \
+	| grep -v -e alpha -e beta \
 	| grep -E "linux.*${arch}") \
 	|| {
 		echo "There is no package \"${package}\""
