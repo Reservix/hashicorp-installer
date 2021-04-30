@@ -1,3 +1,6 @@
+# This project is abandoned
+Please use the [official repositories](https://releases.hashicorp.com/) to install the latest hashicorp packages as [described here](https://www.hashicorp.com/blog/announcing-the-hashicorp-linux-repository).
+
 # hashicorp-installer
 A short POSIX compliant shell script to install hashicorp packages
 
